@@ -74,6 +74,7 @@ semi = P.semi lexer
 comma = P.comma lexer
 commaSep = P.commaSep lexer
 commaSep1 = P.commaSep1 lexer
+decimal = P.decimal lexer
 
 {- Types -}
 
@@ -81,7 +82,11 @@ typeAtom :: Parser Type
 typeAtom = choice [
   reserved "int" >> return IntType,
   reserved "bool" >> return BoolType,
-  -- bit vector
+  do
+    char 'b'
+    char 'v'
+    bw <- decimal
+    return $ BvType bw,
   parens type_
   ]
        
@@ -130,6 +135,12 @@ atom :: Parser BareExpression
 atom = choice [
   reserved "false" >> return ff,
   reserved "true" >> return tt,
+  do
+    bvVal <- decimal
+    char 'b'
+    char 'v'
+    bw <- decimal
+    return $ bvNumeral bvVal bw,
   numeral <$> natural,
   varOrCall,
   old,

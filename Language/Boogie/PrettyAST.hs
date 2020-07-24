@@ -26,6 +26,7 @@ instance Pretty Program where
 instance Pretty Type where 
   pretty BoolType = text "bool"
   pretty IntType = text "int"
+  pretty (BvType bw) =  text "bv" <> integer bw
   pretty (MapType fv domains range) = typeArgsDoc fv <> 
     brackets (commaSep (map pretty domains)) <+>
     pretty range
@@ -246,6 +247,7 @@ instance Pretty Value where
   pretty (IntValue n) = integer n
   pretty (BoolValue False) = text "false"
   pretty (BoolValue True) = text "true"
+  pretty (BvValue val bw) = integer val <> text "bv" <> integer bw
   pretty (CustomValue t n) = pretty t <+> int n
   pretty (Reference _ r) = refDoc r  
   

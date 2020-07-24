@@ -22,6 +22,7 @@ newtype Program = Program [Decl]
 data GenType fv = 
   BoolType |                                -- ^ bool 
   IntType |                                 -- ^ int
+  BvType Integer |
   MapType [fv] [GenType fv] (GenType fv) |  -- 'MapType' @type_vars domains range@ : arrow type (used for maps, function and procedure signatures)
   IdType Id [GenType fv]                    -- 'IdType' @name args@: type denoted by an identifier (either type constructor, possibly with arguments, or a type variable)
   deriving (Data, Typeable)
@@ -43,6 +44,7 @@ deBrujn t = deBrujn' [] t
     deBrujn' fv (IdType name args) = IdType name (map (deBrujn' fv) args)
     deBrujn' _ BoolType = BoolType
     deBrujn' _ IntType = IntType
+    deBrujn' _ (BvType bw) = BvType bw
     dbIndex i = IdType ("DB " ++ show i) []
     
 deriving instance Eq (GenType ())
@@ -93,6 +95,7 @@ mapSelectExpr m args = attachPos (position m) (MapSelection m args)
 ff = Literal (BoolValue False)
 tt = Literal (BoolValue True)
 numeral n = Literal (IntValue n)
+bvNumeral val bw = Literal (BvValue val bw)
 
 isLiteral (Pos _ (Literal _)) = True
 isLiteral _ = False
@@ -198,6 +201,7 @@ emptyMap = M.empty
 -- | Run-time value
 data Value = IntValue Integer |  -- ^ Integer value
   BoolValue Bool |               -- ^ Boolean value
+  BvValue Integer Integer |
   CustomValue Type Ref |         -- ^ Value of a user-defined type
   Reference Type Ref             -- ^ Map reference
   deriving (Eq, Ord, Data, Typeable)
